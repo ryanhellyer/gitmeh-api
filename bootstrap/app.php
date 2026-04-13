@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\EnforceGitmehDailyLimit;
+use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,6 +17,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'gitmeh',
             'gitmeh/*',
         ]);
+
+        $middleware->alias([
+            'gitmeh.daily' => EnforceGitmehDailyLimit::class,
+        ]);
+    })
+    ->withSchedule(function (Schedule $schedule): void {
+        $schedule->command('api:flush-daily-hits')->dailyAt('00:05');
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
