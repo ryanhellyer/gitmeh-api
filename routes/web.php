@@ -1,7 +1,13 @@
 <?php
 
+use App\Http\Controllers\GitmehController;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+$apiOnly = fn () => response()->view('api-only');
+
+Route::post('/gitmeh', GitmehController::class);
+Route::post('/gitmeh/', GitmehController::class);
+
+Route::get('/', $apiOnly);
+
+Route::fallback($apiOnly);
