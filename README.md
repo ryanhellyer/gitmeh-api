@@ -11,5 +11,5 @@ PHP 8.5, Laravel 13.
 ### PHPStan
 
 ```bash
-./vendor/bin/phpstan analyse ./
+./vendor/bin/phpstan analyse
 ```
