@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Http\Middleware\EnforceGitmehDailyLimit;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Application;
