@@ -82,47 +82,40 @@ class GitmehDailyApiLimiter
     }
 
     /**
-     * Flush completed days from Redis into the database (dates strictly before today in rate-limit TZ).
+     * Best-effort archival of yesterday's Redis hit hash into SQLite.
      *
-     * @return int Number of Redis day keys deleted
+     * Only the calendar day immediately before "today" (rate-limit timezone) is considered.
+     * Skipped scheduler runs may omit days; no multi-day catch-up is attempted.
+     *
+     * @return int 1 if yesterday's Redis day key existed and was removed (after persist or empty-hash cleanup), 0 if that key did not exist
      */
     public function flushCompletedDaysToDatabase(): int
     {
         $tz = $this->timezone();
-        $todayStart = CarbonImmutable::now($tz)->startOfDay();
-        $deleted = 0;
+        $yesterday = CarbonImmutable::now($tz)->startOfDay()->subDay();
+        $key = $this->dayHashKey($yesterday);
 
-        for ($i = 1; $i <= 400; $i++) {
-            $day = CarbonImmutable::now($tz)->subDays($i)->startOfDay();
-            if ($day->greaterThanOrEqualTo($todayStart)) {
-                continue;
-            }
-
-            $key = $this->dayHashKey($day);
-            if (! $this->redis()->exists($key)) {
-                continue;
-            }
-
-            $rows = $this->redis()->hgetall($key);
-            if ($rows === [] || $rows === false) {
-                $this->redis()->del($key);
-                $deleted++;
-
-                continue;
-            }
-
-            $dayString = $day->format('Y-m-d');
-            foreach ($rows as $ip => $count) {
-                ApiIpDailyHit::query()->updateOrCreate(
-                    ['ip' => $ip, 'day' => $dayString],
-                    ['hit_count' => (int) $count]
-                );
-            }
-
-            $this->redis()->del($key);
-            $deleted++;
+        if (! $this->redis()->exists($key)) {
+            return 0;
         }
 
-        return $deleted;
+        $rows = $this->redis()->hgetall($key);
+        if ($rows === [] || $rows === false) {
+            $this->redis()->del($key);
+
+            return 1;
+        }
+
+        $dayString = $yesterday->format('Y-m-d');
+        foreach ($rows as $ip => $count) {
+            ApiIpDailyHit::query()->updateOrCreate(
+                ['ip' => $ip, 'day' => $dayString],
+                ['hit_count' => (int) $count]
+            );
+        }
+
+        $this->redis()->del($key);
+
+        return 1;
     }
 }

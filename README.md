@@ -1,5 +1,9 @@
 # Gitmeh API
 
+This application provides a free API for [gitmeh](http://github.com/ryanhellyer/gitmeh), an automatic git commit tool I made.
+
+This API uses the Gemma 3-4b model, which is extremely cost-effective, allowing me to provide this service for free to users of `gitmeh`. The application acts as a proxy, routing requests through its own API to protect the underlying AI provider's API key from being exposed or abused by end-users.
+
 Uses PHP 8.5 and Laravel 13.
 
 ## Tests

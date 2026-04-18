@@ -11,7 +11,7 @@ class FlushDailyApiHitsToDatabase extends Command
 {
     protected $signature = 'api:flush-daily-hits';
 
-    protected $description = 'Persist completed days of Redis gitmeh hit counts to the database and remove those Redis keys';
+    protected $description = 'Persist yesterday\'s Redis gitmeh hit hash to the database and remove that Redis key';
 
     public function handle(GitmehDailyApiLimiter $limiter): int
     {
