@@ -6,10 +6,13 @@ namespace Tests\Feature;
 
 use App\Services\GitmehDailyApiLimiter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
+use Laravel\Ai\AnonymousAgent;
 use Tests\TestCase;
 
+/**
+ * This tests the rate limiting and how it interfaces with Redis.
+ */
 class GitmehRateLimitTest extends TestCase
 {
     use RefreshDatabase;
@@ -20,16 +23,10 @@ class GitmehRateLimitTest extends TestCase
 
         config([
             'gitmeh.daily_limit' => 3,
-            'services.openrouter.key' => 'sk-test-key',
+            'ai.providers.openrouter.key' => 'sk-test-key',
         ]);
 
-        Http::fake([
-            'openrouter.ai/*' => Http::response([
-                'choices' => [
-                    ['message' => ['content' => 'commit message']],
-                ],
-            ], 200),
-        ]);
+        AnonymousAgent::fake(array_fill(0, 20, 'commit message'));
 
         try {
             Redis::connection()->flushdb();

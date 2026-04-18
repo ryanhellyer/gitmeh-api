@@ -33,3 +33,9 @@ curl -skS --request POST \
 ```bash
 php artisan test tests/Unit
 ```
+
+## Feature tests
+
+```bash
+php artisan test tests/Feature
+```

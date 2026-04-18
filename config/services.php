@@ -38,11 +38,7 @@ return [
     ],
 
     'openrouter' => [
-        'key' => env('OPENROUTER_API_KEY'),
-        'model' => env('OPENROUTER_MODEL', 'google/gemma-3-4b-it'),
         'prompt' => env('GITMEH_PROMPT'),
-        'http_referer' => env('OPENROUTER_HTTP_REFERER', env('APP_URL')),
-        'title' => env('OPENROUTER_TITLE', env('APP_NAME')),
         'timeout' => env('OPENROUTER_TIMEOUT', 120),
     ],
 

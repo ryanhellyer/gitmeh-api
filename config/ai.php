@@ -119,6 +119,16 @@ return [
         'openrouter' => [
             'driver' => 'openrouter',
             'key' => env('OPENROUTER_API_KEY'),
+            'url' => env('OPENROUTER_URL', 'https://openrouter.ai/api/v1'),
+            'site' => [
+                'http_referer' => env('OPENROUTER_HTTP_REFERER', env('APP_URL')),
+                'x_title' => env('OPENROUTER_TITLE', env('APP_NAME')),
+            ],
+            'models' => [
+                'text' => [
+                    'default' => env('OPENROUTER_MODEL', 'google/gemma-3-4b-it'),
+                ],
+            ],
         ],
 
         'voyageai' => [
