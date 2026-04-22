@@ -23,6 +23,11 @@ Uses PHP 8.5 and Laravel 13.
 Use this command to test the API.
 
 ```bash
+curl -k -sS -X POST 'https://ai.hellyer.test/v1/chat/completions' -H 'Content-Type: application/json' -H 'Authorization: Bearer gitmeh-public-client' -d '{"model":"gitmeh-hosted","messages":[{"role":"user","content":"Unified diff:\n+a\n"}]}' | jq .
+```
+
+Legacy API request:
+```bash
 curl -skS --request POST \
   --header 'Content-Type: text/plain; charset=UTF-8' \
   --data-binary $'diff --git a/README.md b/README.md\n--- a/README.md\n+++
