@@ -15,6 +15,8 @@ Route::get('/gitmeh/', GitmehStatusController::class);
 Route::post('/gitmeh', GitmehController::class)->middleware('gitmeh.daily');
 Route::post('/gitmeh/', GitmehController::class)->middleware('gitmeh.daily');
 
+// Path matches OpenAI's REST API (POST /v1/chat/completions) so gitmeh and other clients can use
+// the same base URL + /chat/completions pattern as for OpenAI-compatible providers.
 Route::any('/v1/chat/completions', GitmehChatCompletionsController::class)->middleware([
     'gitmeh.chat_post_only',
     'gitmeh.json_body',

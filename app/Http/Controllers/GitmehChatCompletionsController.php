@@ -9,6 +9,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * OpenAI-compatible chat completions: same URL shape as OpenAI ({@see https://api.openai.com/v1/chat/completions})
+ * so the gitmeh client can treat this host like any other OpenAI-style provider (JSON body, choices[].message.content).
+ */
 final class GitmehChatCompletionsController extends Controller
 {
     private const UNIFIED_DIFF_PREFIX = "Unified diff:\n";
@@ -98,7 +102,8 @@ final class GitmehChatCompletionsController extends Controller
             ? implode("\n\n", $systemParts)
             : $this->generator->defaultInstruction();
 
-        $result = $this->generator->generate($instruction, $diff);
+        $timeout = (int) config('gitmeh.chat_inference_timeout_seconds', 20);
+        $result = $this->generator->generate($instruction, $diff, $timeout);
 
         $latencyMs = (int) round((microtime(true) - $started) * 1000);
         Log::info('gitmeh.chat_completions', [

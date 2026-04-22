@@ -22,6 +22,7 @@ class GitmehChatCompletionsTest extends TestCase
             'gitmeh.daily_limit' => 100,
             'gitmeh.max_json_request_bytes' => 4096,
             'gitmeh.hosted_bearer_token' => 'gitmeh-public-client',
+            'gitmeh.chat_inference_timeout_seconds' => 20,
             'ai.providers.openrouter.key' => 'sk-test-key',
         ]);
 
@@ -113,6 +114,17 @@ class GitmehChatCompletionsTest extends TestCase
         ], $this->validPayload())
             ->assertStatus(401)
             ->assertJsonPath('error.code', 'invalid_api_key');
+    }
+
+    public function test_empty_model_text_returns_502_json(): void
+    {
+        AnonymousAgent::fake(['']);
+
+        $this->call('POST', '/v1/chat/completions', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], $this->validPayload())
+            ->assertStatus(502)
+            ->assertJsonPath('error.code', 'inference_error');
     }
 
     public function test_v1_shares_daily_limit_with_legacy_gitmeh(): void

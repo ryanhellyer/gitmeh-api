@@ -14,9 +14,10 @@ final class GitmehCommitMessageGenerator
     private const DEFAULT_PROMPT = 'Write a short, professional git commit message for these changes. Use imperative mood. Only return the message text:';
 
     /**
+     * @param  ?int  $inferenceTimeoutSeconds  When null, uses `services.openrouter.timeout` from config.
      * @return array{ok: true, message: string}|array{ok: false, error: string, status: int}
      */
-    public function generate(string $instruction, string $unifiedDiff): array
+    public function generate(string $instruction, string $unifiedDiff, ?int $inferenceTimeoutSeconds = null): array
     {
         $key = config('ai.providers.openrouter.key');
         if ($key === null || $key === '') {
@@ -24,7 +25,7 @@ final class GitmehCommitMessageGenerator
         }
 
         $model = config('ai.providers.openrouter.models.text.default', 'google/gemma-3-4b-it');
-        $timeout = (int) config('services.openrouter.timeout', 120);
+        $timeout = $inferenceTimeoutSeconds ?? (int) config('services.openrouter.timeout', 120);
 
         $agent = agent($instruction);
         if (! $agent instanceof AnonymousAgent) {
