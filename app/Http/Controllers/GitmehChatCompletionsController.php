@@ -57,6 +57,14 @@ final class GitmehChatCompletionsController extends Controller
             return $this->errorResponse('Field "model" must be a string.', 'invalid_request_error', 'invalid_model', 400);
         }
 
+        if (array_key_exists('provider', $data) && ! is_string($data['provider'])) {
+            return $this->errorResponse('Field "provider" must be a string.', 'invalid_request_error', 'invalid_provider', 400);
+        }
+
+        if (array_key_exists('fallback_models', $data) && (! is_array($data['fallback_models']) || ! array_all($data['fallback_models'], 'is_string'))) {
+            return $this->errorResponse('Field "fallback_models" must be an array of strings.', 'invalid_request_error', 'invalid_fallback_models', 400);
+        }
+
         if (! isset($data['messages']) || ! is_array($data['messages'])) {
             return $this->errorResponse('Field "messages" is required and must be an array.', 'invalid_request_error', 'missing_messages', 400);
         }
@@ -102,8 +110,24 @@ final class GitmehChatCompletionsController extends Controller
             ? implode("\n\n", $systemParts)
             : $this->generator->defaultInstruction();
 
+        $provider = is_string($data['provider'] ?? null) ? $data['provider'] : null;
+        $clientApiKey = $request->attributes->get('gitmeh_client_api_key');
+        $clientApiKey = is_string($clientApiKey) ? $clientApiKey : null;
+        $model = is_string($data['model'] ?? null) ? $data['model'] : null;
+        $fallbackModels = array_filter(
+            (array) ($data['fallback_models'] ?? []),
+            'is_string'
+        );
         $timeout = (int) config('gitmeh.chat_inference_timeout_seconds', 20);
-        $result = $this->generator->generate($instruction, $diff, $timeout);
+        $result = $this->generator->generate(
+            instruction: $instruction,
+            unifiedDiff: $diff,
+            inferenceTimeoutSeconds: $timeout,
+            provider: $provider,
+            apiKey: $clientApiKey,
+            model: $model,
+            fallbackModels: $fallbackModels,
+        );
 
         $latencyMs = (int) round((microtime(true) - $started) * 1000);
         Log::info('gitmeh.chat_completions', [

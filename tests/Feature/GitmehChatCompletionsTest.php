@@ -6,8 +6,8 @@ namespace Tests\Feature;
 
 use App\Services\GitmehDailyApiLimiter;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Redis;
-use Laravel\Ai\AnonymousAgent;
 use Tests\TestCase;
 
 class GitmehChatCompletionsTest extends TestCase
@@ -24,9 +24,21 @@ class GitmehChatCompletionsTest extends TestCase
             'gitmeh.hosted_bearer_token' => 'gitmeh-public-client',
             'gitmeh.chat_inference_timeout_seconds' => 20,
             'ai.providers.openrouter.key' => 'sk-test-key',
+            'ai.providers.openrouter.url' => 'https://openrouter.ai/api/v1',
         ]);
 
-        AnonymousAgent::fake(array_fill(0, 50, 'Add bar to foo'));
+        Http::fake([
+            'openrouter.ai/*' => Http::response([
+                'choices' => [
+                    [
+                        'message' => [
+                            'role' => 'assistant',
+                            'content' => 'Add bar to foo',
+                        ],
+                    ],
+                ],
+            ], 200),
+        ]);
 
         try {
             Redis::connection()->flushdb();
@@ -116,9 +128,93 @@ class GitmehChatCompletionsTest extends TestCase
             ->assertJsonPath('error.code', 'invalid_api_key');
     }
 
+    public function test_custom_bearer_is_forwarded_to_provider(): void
+    {
+        Http::fake([
+            'openrouter.ai/*' => function (\Illuminate\Http\Client\Request $request) {
+                $this->assertSame('Bearer my-custom-key', $request->header('Authorization')[0]);
+
+                return Http::response([
+                    'choices' => [
+                        ['message' => ['role' => 'assistant', 'content' => 'custom key msg']],
+                    ],
+                ], 200);
+            },
+        ]);
+
+        config(['gitmeh.hosted_bearer_token' => 'gitmeh-public-client']);
+
+        $this->call('POST', '/v1/chat/completions', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer my-custom-key',
+        ], json_encode([
+            'model' => 'custom-model',
+            'messages' => [
+                ['role' => 'user', 'content' => 'diff content'],
+            ],
+        ], JSON_THROW_ON_ERROR))
+            ->assertOk()
+            ->assertJsonPath('choices.0.message.content', 'custom key msg');
+    }
+
+    public function test_provider_field_selects_upstream_provider(): void
+    {
+        Http::fake([
+            'api.openai.com/*' => Http::response([
+                'choices' => [
+                    ['message' => ['role' => 'assistant', 'content' => 'openai response']],
+                ],
+            ], 200),
+        ]);
+
+        config([
+            'ai.providers.openai.key' => 'sk-openai-test',
+            'ai.providers.openai.url' => 'https://api.openai.com/v1',
+        ]);
+
+        $this->call('POST', '/v1/chat/completions', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'provider' => 'openai',
+            'model' => 'gpt-4',
+            'messages' => [
+                ['role' => 'user', 'content' => 'diff content'],
+            ],
+        ], JSON_THROW_ON_ERROR))
+            ->assertOk()
+            ->assertJsonPath('choices.0.message.content', 'openai response');
+    }
+
+    public function test_fallback_models_are_tried_on_context_length_error(): void
+    {
+        Http::fake([
+            'openrouter.ai/*' => Http::sequence()
+                ->push(['error' => ['message' => 'context length exceeded']], 400)
+                ->push(['choices' => [['message' => ['role' => 'assistant', 'content' => 'fallback worked']]]], 200),
+        ]);
+
+        $this->call('POST', '/v1/chat/completions', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'model' => 'primary-model',
+            'fallback_models' => ['fallback-model'],
+            'messages' => [
+                ['role' => 'user', 'content' => 'diff content'],
+            ],
+        ], JSON_THROW_ON_ERROR))
+            ->assertOk()
+            ->assertJsonPath('choices.0.message.content', 'fallback worked');
+    }
+
     public function test_empty_model_text_returns_502_json(): void
     {
-        AnonymousAgent::fake(['']);
+        Http::fake([
+            'openrouter.ai/*' => Http::response([
+                'choices' => [
+                    ['message' => ['role' => 'assistant', 'content' => '']],
+                ],
+            ], 200),
+        ]);
 
         $this->call('POST', '/v1/chat/completions', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
@@ -139,5 +235,61 @@ class GitmehChatCompletionsTest extends TestCase
 
         $this->call('POST', '/gitmeh', [], [], [], ['CONTENT_TYPE' => 'text/plain'], 'diff')
             ->assertStatus(429);
+    }
+
+    public function test_unknown_provider_returns_400(): void
+    {
+        $this->call('POST', '/v1/chat/completions', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'provider' => 'nonexistent',
+            'messages' => [
+                ['role' => 'user', 'content' => 'diff content'],
+            ],
+        ], JSON_THROW_ON_ERROR))
+            ->assertStatus(400)
+            ->assertJsonPath('error.code', 'inference_error');
+    }
+
+    public function test_invalid_provider_type_returns_400(): void
+    {
+        $this->call('POST', '/v1/chat/completions', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'provider' => 123,
+            'messages' => [
+                ['role' => 'user', 'content' => 'diff'],
+            ],
+        ], JSON_THROW_ON_ERROR))
+            ->assertStatus(400)
+            ->assertJsonPath('error.code', 'invalid_provider');
+    }
+
+    public function test_invalid_fallback_models_type_returns_400(): void
+    {
+        $this->call('POST', '/v1/chat/completions', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'fallback_models' => 'not-an-array',
+            'messages' => [
+                ['role' => 'user', 'content' => 'diff'],
+            ],
+        ], JSON_THROW_ON_ERROR))
+            ->assertStatus(400)
+            ->assertJsonPath('error.code', 'invalid_fallback_models');
+    }
+
+    public function test_invalid_fallback_models_element_type_returns_400(): void
+    {
+        $this->call('POST', '/v1/chat/completions', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'fallback_models' => [123],
+            'messages' => [
+                ['role' => 'user', 'content' => 'diff'],
+            ],
+        ], JSON_THROW_ON_ERROR))
+            ->assertStatus(400)
+            ->assertJsonPath('error.code', 'invalid_fallback_models');
     }
 }

@@ -32,8 +32,13 @@ final class ValidateOptionalGitmehHostedBearer
         }
 
         $token = trim(substr($header, strlen($prefix)));
-        if ($token === '' || ! hash_equals($expected, $token)) {
+        if ($token === '') {
             return $this->unauthorized('Invalid bearer token.');
+        }
+
+        if (! hash_equals($expected, $token)) {
+            // Non-hosted token: store it for the controller to forward downstream.
+            $request->attributes->set('gitmeh_client_api_key', $token);
         }
 
         return $next($request);
