@@ -10,7 +10,7 @@ use Throwable;
 
 final class GitmehCommitMessageGenerator
 {
-    private const DEFAULT_PROMPT = 'Write a short, professional git commit message for these changes. Use imperative mood. Only return the message text:';
+    private const DEFAULT_PROMPT = 'Write a Git commit message (Conventional Commits format) for this diff. Reply with ONLY the commit message. No analysis, no explanation, no preamble. Start with a verb. No numbering. No bullet points.';
 
     private const MAX_RETRIES_PER_MODEL = 3;
 
