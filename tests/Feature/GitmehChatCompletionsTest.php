@@ -23,6 +23,7 @@ class GitmehChatCompletionsTest extends TestCase
             'gitmeh.max_json_request_bytes' => 4096,
             'gitmeh.hosted_bearer_token' => 'gitmeh-public-client',
             'gitmeh.chat_inference_timeout_seconds' => 20,
+            'gitmeh.default_provider' => 'openrouter',
             'ai.providers.openrouter.key' => 'sk-test-key',
             'ai.providers.openrouter.url' => 'https://openrouter.ai/api/v1',
         ]);
@@ -69,7 +70,22 @@ class GitmehChatCompletionsTest extends TestCase
         ], $this->validPayload())
             ->assertOk()
             ->assertJsonPath('choices.0.message.role', 'assistant')
-            ->assertJsonPath('choices.0.message.content', 'Add bar to foo');
+            ->assertJsonPath('choices.0.message.content', 'Add bar to foo')
+            ->assertJsonPath('model', 'google/gemma-3-4b-it');
+    }
+
+    public function test_gitmeh_hosted_model_resolved_to_provider_default(): void
+    {
+        $this->call('POST', '/v1/chat/completions', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+        ], json_encode([
+            'model' => 'gitmeh-hosted',
+            'messages' => [
+                ['role' => 'user', 'content' => "Unified diff:\n--- a/foo\n+++ b/foo\n@@ -0,0 +1 @@\n+baz\n"],
+            ],
+        ], JSON_THROW_ON_ERROR))
+            ->assertOk()
+            ->assertJsonPath('model', 'google/gemma-3-4b-it');
     }
 
     public function test_missing_messages_returns_400_json(): void
@@ -118,11 +134,21 @@ class GitmehChatCompletionsTest extends TestCase
         $this->assertSame($before, $limiter->currentUsage('127.0.0.1'));
     }
 
-    public function test_wrong_bearer_returns_401(): void
+    public function test_invalid_auth_scheme_returns_401(): void
     {
         $this->call('POST', '/v1/chat/completions', [], [], [], [
             'CONTENT_TYPE' => 'application/json',
-            'HTTP_AUTHORIZATION' => 'Bearer wrong-token',
+            'HTTP_AUTHORIZATION' => 'Basic dXNlcjpwYXNz',
+        ], $this->validPayload())
+            ->assertStatus(401)
+            ->assertJsonPath('error.code', 'invalid_api_key');
+    }
+
+    public function test_empty_bearer_returns_401(): void
+    {
+        $this->call('POST', '/v1/chat/completions', [], [], [], [
+            'CONTENT_TYPE' => 'application/json',
+            'HTTP_AUTHORIZATION' => 'Bearer ',
         ], $this->validPayload())
             ->assertStatus(401)
             ->assertJsonPath('error.code', 'invalid_api_key');

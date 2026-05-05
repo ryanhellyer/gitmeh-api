@@ -12,8 +12,8 @@ Bearer auth is optional. Three modes:
 
 | Mode | Behavior | API key forwarded downstream |
 |---|---|---|
-| No `Authorization` header | Uses the server's configured `OPENROUTER_API_KEY` | No |
-| `Authorization: Bearer gitmeh-public-client` (or `GITMEH_HOSTED_TOKEN`) | Uses the server's configured `OPENROUTER_API_KEY` | No |
+| No `Authorization` header | Uses the server's configured `OPENAI_API_KEY` | No |
+| `Authorization: Bearer gitmeh-public-client` (or `GITMEH_HOSTED_TOKEN`) | Uses the server's configured `OPENAI_API_KEY` | No |
 | `Authorization: Bearer <your-key>` (any non-hosted token) | Uses **your key** as the downstream API key | Yes |
 
 ## Model selection
@@ -49,11 +49,11 @@ curl -k -sS -X POST 'https://ai.hellyer.test/v1/chat/completions' \
 
 ## Provider selection
 
-The optional `provider` field selects an upstream provider from `config/ai.php` (default: `openrouter`). Available providers include `openai`, `anthropic`, `groq`, `mistral`, `deepseek`, `gemini`, `xai`, `ollama`, and others defined in that config file. Each provider uses its own configured API key and default model unless overridden via the `Authorization` header or `model` field.
+The optional `provider` field selects an upstream provider from `config/ai.php` (default from `GITMEH_PROVIDER`, falls back to `openrouter`). Available providers include `openai`, `anthropic`, `groq`, `mistral`, `deepseek`, `gemini`, `xai`, `ollama`, and others defined in that config file. Each provider uses its own configured API key and default model unless overridden via the `Authorization` header or `model` field.
 
 ## Legacy endpoint
 
-The plain-text `POST /gitmeh` endpoint still works and always routes through the server's OpenRouter configuration.
+The plain-text `POST /gitmeh` endpoint still works and always routes through the server's default provider configuration.
 
 Uses PHP 8.5 and Laravel 13.
 

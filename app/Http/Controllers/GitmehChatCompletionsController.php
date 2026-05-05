@@ -61,7 +61,7 @@ final class GitmehChatCompletionsController extends Controller
             return $this->errorResponse('Field "provider" must be a string.', 'invalid_request_error', 'invalid_provider', 400);
         }
 
-        if (array_key_exists('fallback_models', $data) && (! is_array($data['fallback_models']) || ! array_all($data['fallback_models'], 'is_string'))) {
+        if (array_key_exists('fallback_models', $data) && (! is_array($data['fallback_models']) || ! array_all($data['fallback_models'], fn ($v) => is_string($v)))) {
             return $this->errorResponse('Field "fallback_models" must be an array of strings.', 'invalid_request_error', 'invalid_fallback_models', 400);
         }
 
@@ -148,7 +148,7 @@ final class GitmehChatCompletionsController extends Controller
             'id' => 'chatcmpl-gitmeh-'.bin2hex(random_bytes(8)),
             'object' => 'chat.completion',
             'created' => time(),
-            'model' => is_string($data['model'] ?? null) ? $data['model'] : 'gitmeh-hosted',
+            'model' => $result['model'] ?? (is_string($data['model'] ?? null) ? $data['model'] : 'gitmeh-hosted'),
             'choices' => [
                 [
                     'index' => 0,

@@ -37,9 +37,4 @@ return [
         ],
     ],
 
-    'openrouter' => [
-        'prompt' => env('GITMEH_PROMPT'),
-        'timeout' => env('OPENROUTER_TIMEOUT', 120),
-    ],
-
-];
+    ];

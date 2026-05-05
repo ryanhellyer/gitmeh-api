@@ -23,6 +23,7 @@ class GitmehRateLimitTest extends TestCase
 
         config([
             'gitmeh.daily_limit' => 3,
+            'gitmeh.default_provider' => 'openrouter',
             'ai.providers.openrouter.key' => 'sk-test-key',
         ]);
 
