@@ -116,6 +116,23 @@ return [
             'url' => env('OPENAI_URL', 'https://api.openai.com/v1'),
         ],
 
+        'opencode' => [
+            'driver' => 'openai',
+            'key' => env('OPENCODE_API_KEY'),
+            'url' => 'https://opencode.ai/zen/v1',
+            'models' => [
+                'text' => [
+                    // Not working
+                    // 'default' => env('OPENCODE_MODEL', 'kimi-k2.5'),
+                    // 'default' => env('OPENCODE_MODEL', 'ling-2.6-flash'),
+
+                    // Works
+                    //'default' => env('OPENCODE_MODEL', 'big-pickle'),
+                    'default' => env('OPENCODE_MODEL', 'gpt-5-nano'),
+                ],
+            ],
+        ],
+
         'openrouter' => [
             'driver' => 'openrouter',
             'key' => env('OPENROUTER_API_KEY'),

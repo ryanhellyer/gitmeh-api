@@ -6,8 +6,8 @@
 # GitHub: https://github.com/ryanhellyer/gitmeh
 
 # Configuration
-API_KEY="${OPENROUTER_API_KEY:-$GEMINI_API_KEY}"
-MODEL="${OPENROUTER_MODEL:-google/gemma-3-4b-it}"
+API_KEY="${OPENAI_API_KEY:-$GEMINI_API_KEY}"
+MODEL="${OPENAI_MODEL:-google/gemma-3-4b-it}"
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 MAX_TOTAL_CHARS=10000
 CHARS_PER_FILE=800
@@ -85,10 +85,10 @@ if [[ "$1" == "--help" ]] || [[ "$1" == "-h" ]]; then
     echo -e "${CYAN}$(get_random "${INTRO_PHRASES[@]}")${NC}"
     echo "Usage: gitmeh"
     echo ""
-    echo "Setup: Store your OpenRouter API key in your shell config (~/.bashrc, ~/.zshrc, or ~/.profile):"
-    echo "export OPENROUTER_API_KEY='your_key_here'"
+    echo "Setup: Store your API key in your shell config (~/.bashrc, ~/.zshrc, or ~/.profile):"
+    echo "export OPENAI_API_KEY='your_key_here'"
     echo ""
-    echo "Optional: Set OPENROUTER_MODEL (default: google/gemma-3-4b-it). See https://openrouter.ai/models"
+    echo "Optional: Set OPENAI_MODEL (default: google/gemma-3-4b-it). See https://openrouter.ai/models"
     echo "Optional: Set GITMEH_PROMPT to customize the instruction sent to the AI (the diff is always appended)."
     echo ""
     echo "Author: Ryan Hellyer (https://ryan.hellyer.kiwi)"
@@ -97,7 +97,7 @@ fi
 
 # Check API Key
 if [ -z "$API_KEY" ]; then
-    echo -e "${YELLOW}Error: OPENROUTER_API_KEY is missing.${NC}"
+    echo -e "${YELLOW}Error: OPENAI_API_KEY is missing.${NC}"
     echo "Get a key at https://openrouter.ai/keys and put it in ~/.bashrc or ~/.zshrc."
     exit 1
 fi
