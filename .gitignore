@@ -18,3 +18,7 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+###> command-code ###
+/.commandcode/
+###< command-code ###
