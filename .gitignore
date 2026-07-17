@@ -22,3 +22,9 @@
 ###> command-code ###
 /.commandcode/
 ###< command-code ###
+
+.env
+.env.dev
+.env.local
+.env.test
+
