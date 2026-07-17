@@ -395,9 +395,9 @@ final class GitmehCommitMessageGenerator
 
 ## Phase 3: Rate Limiting
 
-### 3.1 Create `src/Service/GitmehDailyApiLimiter.php`
+### 3.1 Create `src/Service/GitmehHourlyLimiter.php`
 
-This replaces Laravel's `app/Services/GitmehDailyApiLimiter.php`. Uses `\Predis\Client` directly for Redis hash operations.
+This replaces Laravel's `app/Services/GitmehHourlyLimiter.php`. Uses `\Predis\Client` directly for Redis hash operations.
 
 ```php
 <?php
@@ -409,7 +409,7 @@ namespace App\Service;
 use Predis\Client;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-final class GitmehDailyApiLimiter
+final class GitmehHourlyLimiter
 {
     private readonly string $timezone;
     private readonly int $dailyLimit;
@@ -503,7 +503,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
-use App\Service\GitmehDailyApiLimiter;
+use App\Service\GitmehHourlyLimiter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -513,7 +513,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 final class RateLimitSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly GitmehDailyApiLimiter $limiter,
+        private readonly GitmehHourlyLimiter $limiter,
     ) {
     }
 
@@ -791,7 +791,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Service\GitmehCommitMessageGenerator;
-use App\Service\GitmehDailyApiLimiter;
+use App\Service\GitmehHourlyLimiter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -802,7 +802,7 @@ final class GitmehController extends AbstractController
 {
     public function __construct(
         private readonly GitmehCommitMessageGenerator $generator,
-        private readonly GitmehDailyApiLimiter $limiter,
+        private readonly GitmehHourlyLimiter $limiter,
     ) {
     }
 
@@ -1108,7 +1108,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Service\GitmehDailyApiLimiter;
+use App\Service\GitmehHourlyLimiter;
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -1119,7 +1119,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 final class FlushDailyApiHitsCommand extends Command
 {
     public function __construct(
-        private readonly GitmehDailyApiLimiter $limiter,
+        private readonly GitmehHourlyLimiter $limiter,
         private readonly Connection $connection,
     ) {
         parent::__construct();
@@ -1133,7 +1133,7 @@ final class FlushDailyApiHitsCommand extends Command
 
         // Redis interaction via the limiter's Redis client
         // The limiter doesn't expose the Redis client directly, so add a method to
-        // GitmehDailyApiLimiter or inject Predis\Client here too.
+        // GitmehHourlyLimiter or inject Predis\Client here too.
 
         // For simplicity, inject Predis\Client directly:
         // $this->redis->hgetall($key) etc.
@@ -1239,7 +1239,7 @@ Delete `src/Controller/AiTestController.php` after confirming everything works.
 | `.env` | **Modify** | Add env vars |
 | `.env.local` | **Modify** | Set real `OPENROUTER_API_KEY` |
 | `src/Service/GitmehCommitMessageGenerator.php` | **Create** | Core LLM service |
-| `src/Service/GitmehDailyApiLimiter.php` | **Create** | Redis rate limiter |
+| `src/Service/GitmehHourlyLimiter.php` | **Create** | Redis rate limiter |
 | `src/EventSubscriber/RateLimitSubscriber.php` | **Create** | Rate limit enforcement (POST-only) |
 | `src/EventSubscriber/JsonBodySizeSubscriber.php` | **Create** | JSON body size check |
 | `src/EventSubscriber/ChatCompletionsPostOnlySubscriber.php` | **Create** | POST-only enforcement |

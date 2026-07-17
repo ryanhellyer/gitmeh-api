@@ -7,7 +7,7 @@ parameters:
     gitmeh.prompt: '%env(GITMEH_PROMPT)%'
     gitmeh.chat_inference_timeout_seconds: '%env(int:GITMEH_CHAT_INFERENCE_TIMEOUT)%'
     gitmeh.timeout: '%env(int:GITMEH_CHAT_TIMEOUT)%'
-    gitmeh.daily_limit: '%env(int:API_DAILY_LIMIT)%'
+    gitmeh.hourly_limit: '%env(int:API_HOURLY_LIMIT)%'
     gitmeh.timezone: '%env(API_RATE_LIMIT_TIMEZONE)%'
     gitmeh.hosted_bearer_token: '%env(GITMEH_HOSTED_TOKEN)%'
     gitmeh.max_json_request_bytes: '%env(int:GITMEH_MAX_JSON_BYTES)%'
