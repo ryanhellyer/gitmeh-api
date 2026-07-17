@@ -4,29 +4,55 @@ declare(strict_types=1);
 
 namespace App\Controller;
 
+use App\Service\GitmehCommitMessageGenerator;
+use App\Service\GitmehDailyApiLimiter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class GitmehController extends AbstractController
 {
+    public function __construct(
+        private readonly GitmehCommitMessageGenerator $generator,
+        private readonly GitmehDailyApiLimiter $limiter,
+    ) {
+    }
+
     #[Route('/gitmeh', name: 'gitmeh_get', methods: ['GET'])]
-    public function get(): Response
+    public function get(Request $request): Response
     {
-        return new Response(
-            'Hello from GET',
-            Response::HTTP_OK,
-            ['Content-Type' => 'text/plain']
-        );
+        // Read-only quota status page — does NOT consume quota (the rate limiter
+        // subscriber only counts POST /gitmeh).
+        $ip = $request->getClientIp() ?? '127.0.0.1';
+
+        return $this->json([
+            'ip' => $ip,
+            ...$this->limiter->statusForIp($ip),
+        ]);
     }
 
     #[Route('/gitmeh', name: 'gitmeh_post', methods: ['POST'])]
-    public function post(): JsonResponse
+    public function post(Request $request): Response
     {
-        return $this->json([
-            'success' => true,
-            'message' => 'Hello from POST',
-        ]);
+        // Legacy endpoint: raw diff in the request body, plain-text commit message out.
+        $diff = $request->getContent();
+        $instruction = $this->generator->defaultInstruction();
+
+        $result = $this->generator->generate($instruction, $diff);
+
+        if (!$result['ok']) {
+            return new Response(
+                $result['error'],
+                $result['status'],
+                ['Content-Type' => 'text/plain; charset=UTF-8']
+            );
+        }
+
+        return new Response(
+            $result['message'],
+            Response::HTTP_OK,
+            ['Content-Type' => 'text/plain; charset=UTF-8']
+        );
     }
 }

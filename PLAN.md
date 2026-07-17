@@ -71,17 +71,17 @@ Set your real `OPENROUTER_API_KEY` in `.env.local`.
 
 ### 1.3 Configure `config/packages/ai.yaml`
 
-The `symfony/ai-open-router-platform` bridge's `Factory` only accepts an API key, base URL, and an HTTP client — there is **no** `http_referer`, `x_title`, or `default_model` config key on the platform (verified against the bridge source). The bundle config therefore only wires the API key and base URL:
+The `symfony/ai-open-router-platform` bridge's `Factory` hardcodes the base URL as `https://openrouter.ai/api` (it appends `/v1/chat/completions` itself). The bundle's `openrouter` config schema (verified in `config/reference.php`) accepts **only** two keys: `api_key` and `http_client`. There is no `base_url`, `http_referer`, `x_title`, or `default_model` key on the platform.
 
 ```yaml
 ai:
     platform:
         openrouter:
             api_key: '%env(OPENROUTER_API_KEY)%'
-            base_url: '%env(default:https://openrouter.ai/api:OPENROUTER_API_BASE_URL)%'
+            http_client: 'openrouter.http_client'   # see Phase 1.7
 ```
 
-The OpenRouter `HTTP-Referer` and `X-Title` headers (which the Laravel app sends for ranking/attribution) are **not** added by the bridge. To preserve that behavior, decorate the platform's HTTP client with a scoped client that injects the headers on every outbound request — see **Phase 1.7** below.
+The OpenRouter `HTTP-Referer` and `X-Title` headers (which the Laravel app sends for ranking/attribution) are **not** added by the bridge. To preserve that behavior, point `http_client` at a scoped client that injects the headers on every outbound request — see **Phase 1.7** below. (If you skip the headers, drop the `http_client` line and the bundle uses the default `http_client` service.)
 
 The default model is **not** configured in `ai.yaml`; it's an app parameter in `gitmeh.yaml` (Phase 1.4) and passed explicitly to `PlatformInterface::invoke()`.
 
@@ -159,12 +159,12 @@ framework:
 
 (On Symfony 7.4 `trusted_proxies` accepts a comma-separated string or `*` to trust all.)
 
-**b) OpenRouter `HTTP-Referer` / `X-Title` headers.** The `symfony/ai-open-router-platform` bridge does **not** send these (confirmed by reading the bridge's `Factory.php` — it only forwards the API key as a Bearer header). The Laravel app sends them for ranking/attribution. To preserve that, register a scoped HttpClient that injects the headers on every OpenRouter request, and point the platform at it:
+**b) OpenRouter `HTTP-Referer` / `X-Title` headers.** The `symfony/ai-open-router-platform` bridge does **not** send these (confirmed by reading the bridge's `Factory.php` — it only forwards the API key as a Bearer header). The Laravel app sends them for ranking/attribution. To preserve that, register a scoped HttpClient that injects the headers on every OpenRouter request, and point the platform at it. `ScopingHttpClient::forBaseUri($client, $baseUri, $defaultOptions)` takes the default options (including `headers`) as its **third** argument — note this is *not* the `defaultOptionsByRegexp` array form used by the constructor:
 
 ```yaml
 # config/services.yaml
 services:
-    Symfony\Contracts\HttpClient\HttpClientInterface $openRouterHttpClient:
+    openrouter.http_client:
         class: Symfony\Component\HttpClient\ScopingHttpClient
         factory: ['Symfony\Component\HttpClient\ScopingHttpClient', 'forBaseUri']
         arguments:
@@ -182,11 +182,10 @@ ai:
     platform:
         openrouter:
             api_key: '%env(OPENROUTER_API_KEY)%'
-            base_url: '%env(default:https://openrouter.ai/api:OPENROUTER_API_BASE_URL)%'
-            http_client: '$openRouterHttpClient'
+            http_client: 'openrouter.http_client'
 ```
 
-> The `http_client` key is documented in the AI Bundle docs ("HTTP Client Configuration"). The exact autowiring alias for the scoped client (`$openRouterHttpClient`) may need to be adjusted depending on how the bundle resolves the `http_client` service id — if a plain service id is required, drop the `$` and reference `openRouterHttpClient` directly.
+> The `http_client` key takes a **service id string** (not the `$autowireAlias` form). The bundle passes that service to `Factory::createPlatform()` as `$httpClient`; the Factory then wraps it in an `EventSourceHttpClient`, which delegates `request()` to the scoped client — so the headers still apply.
 
 ---
 

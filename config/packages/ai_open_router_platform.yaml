@@ -1,0 +1,9 @@
+ai:
+    platform:
+        openrouter:
+            api_key: '%env(OPENROUTER_API_KEY)%'
+            # Scoped HttpClient that injects the OpenRouter HTTP-Referer / X-Title
+            # attribution headers on every outbound request (see config/services.yaml).
+            # If you don't need the attribution headers, remove this line and the
+            # bundle falls back to the default http_client service.
+            http_client: 'openrouter.http_client'

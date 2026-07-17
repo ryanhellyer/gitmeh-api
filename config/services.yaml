@@ -21,3 +21,22 @@ services:
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
+
+    # Redis client for the per-IP daily rate limiter (hash + HINCRBY counters).
+    Predis\Client:
+        arguments:
+            - '%env(REDIS_URL)%'
+
+    # Scoped HttpClient that injects OpenRouter's HTTP-Referer / X-Title attribution
+    # headers on every outbound request. The bridge's Factory hardcodes the base URL
+    # and does not send these headers itself. forBaseUri() takes default options
+    # (incl. "headers") as its THIRD argument.
+    openrouter.http_client:
+        class: Symfony\Component\HttpClient\ScopingHttpClient
+        factory: ['Symfony\Component\HttpClient\ScopingHttpClient', 'forBaseUri']
+        arguments:
+            - '@http_client'
+            - 'https://openrouter.ai/api'
+            - headers:
+                'HTTP-Referer': '%env(OPENROUTER_HTTP_REFERER)%'
+                'X-Title': '%env(OPENROUTER_TITLE)%'

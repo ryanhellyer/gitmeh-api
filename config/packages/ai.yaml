@@ -1,0 +1,12 @@
+ai:
+    platform:
+        # Inference Platform configuration.
+        # The OpenRouter platform is configured in config/packages/ai_open_router_platform.yaml
+        # (scaffolded by the symfony/ai-open-router-platform recipe).
+
+    agent:
+        # Agent configuration
+        # see https://symfony.com/doc/current/ai/bundles/ai-bundle.html
+
+    store:
+        # Store configuration

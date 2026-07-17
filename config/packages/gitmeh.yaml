@@ -1,0 +1,15 @@
+parameters:
+    # OpenRouter-only: provider is always "openrouter" (kept as a param for logging/tests).
+    # All env vars below are defined in .env, so no env(default:...) fallbacks are needed —
+    # the `default:` processor cannot take fallbacks containing slashes or colons (e.g. URLs).
+    gitmeh.provider: 'openrouter'
+    gitmeh.default_model: '%env(OPENROUTER_MODEL)%'
+    gitmeh.prompt: '%env(GITMEH_PROMPT)%'
+    gitmeh.chat_inference_timeout_seconds: '%env(int:GITMEH_CHAT_INFERENCE_TIMEOUT)%'
+    gitmeh.timeout: '%env(int:GITMEH_CHAT_TIMEOUT)%'
+    gitmeh.daily_limit: '%env(int:API_DAILY_LIMIT)%'
+    gitmeh.timezone: '%env(API_RATE_LIMIT_TIMEZONE)%'
+    gitmeh.hosted_bearer_token: '%env(GITMEH_HOSTED_TOKEN)%'
+    gitmeh.max_json_request_bytes: '%env(int:GITMEH_MAX_JSON_BYTES)%'
+    gitmeh.openrouter_http_referer: '%env(OPENROUTER_HTTP_REFERER)%'
+    gitmeh.openrouter_title: '%env(OPENROUTER_TITLE)%'
