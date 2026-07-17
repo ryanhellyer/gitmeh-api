@@ -23,8 +23,11 @@ final class GitmehController extends AbstractController
     public function get(Request $request): Response
     {
         // Read-only quota status page — does NOT consume quota (the rate limiter
-        // subscriber only counts POST /gitmeh).
-        $start = microtime(true);
+        // subscriber only counts POST /gitmeh). The start time is captured at the
+        // very top of public/index.php (before autoload/Runtime/kernel/container),
+        // so this measurement covers the full request lifecycle — same scope as
+        // Laravel's LARAVEL_START.
+        $start = $GLOBALS['_gitmeh_request_start'] ?? microtime(true);
         $ip = $request->getClientIp() ?? '127.0.0.1';
 
         return $this->render('gitmeh/status.html.twig', [
