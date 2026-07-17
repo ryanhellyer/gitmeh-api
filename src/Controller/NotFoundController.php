@@ -20,11 +20,15 @@ final class NotFoundController extends AbstractController
     public function __invoke(Request $request): Response
     {
         if (!in_array($request->getMethod(), [Request::METHOD_GET, Request::METHOD_HEAD], true)) {
-            return $this->render('error404.html.twig')
-                ->setStatusCode(Response::HTTP_METHOD_NOT_ALLOWED);
+            return $this->render('error404.html.twig', [
+                'status_code' => Response::HTTP_METHOD_NOT_ALLOWED,
+                'status_text' => 'Method Not Allowed',
+            ])->setStatusCode(Response::HTTP_METHOD_NOT_ALLOWED);
         }
 
-        return $this->render('error404.html.twig')
-            ->setStatusCode(Response::HTTP_NOT_FOUND);
+        return $this->render('error404.html.twig', [
+            'status_code' => Response::HTTP_NOT_FOUND,
+            'status_text' => 'Not Found',
+        ])->setStatusCode(Response::HTTP_NOT_FOUND);
     }
 }
