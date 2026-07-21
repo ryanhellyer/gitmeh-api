@@ -14,4 +14,5 @@ return [
     Symfony\Bundle\MonologBundle\MonologBundle::class => ['all' => true],
     Symfony\Bundle\MakerBundle\MakerBundle::class => ['dev' => true],
     Symfony\AI\AiBundle\AiBundle::class => ['all' => true],
+    RyanHellyer\ProductionStats\Symfony\ProductionStatsBundle::class => ['all' => true],
 ];

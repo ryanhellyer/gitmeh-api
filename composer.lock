@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "cb69a9b8ad5db9560ae94d16d1f5ba6e",
+    "content-hash": "c425029a48aba81149f350f594fa1cad",
     "packages": [
         {
             "name": "composer/semver",
@@ -2064,6 +2064,81 @@
                 "source": "https://github.com/php-fig/log/tree/3.0.2"
             },
             "time": "2024-09-11T13:17:53+00:00"
+        },
+        {
+            "name": "ryanhellyer/production-stats",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/ryanhellyer/production-stats.git",
+                "reference": "6422c73f6bd3c19489795776f8f38dfd32fd501f"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/ryanhellyer/production-stats/zipball/6422c73f6bd3c19489795776f8f38dfd32fd501f",
+                "reference": "6422c73f6bd3c19489795776f8f38dfd32fd501f",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.2",
+                "symfony/http-foundation": "^6.0|^7.0"
+            },
+            "replace": {
+                "ryanhellyer/laravel-production-stats": "self.version"
+            },
+            "require-dev": {
+                "illuminate/http": "^10.0|^11.0|^12.0|^13.0",
+                "illuminate/support": "^10.0|^11.0|^12.0|^13.0",
+                "phpcsstandards/php_codesniffer": "^3.13|^4.0",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^11.5|^12.5",
+                "symfony/event-dispatcher": "^6.0|^7.0",
+                "symfony/http-kernel": "^6.0|^7.0"
+            },
+            "suggest": {
+                "illuminate/http": "Required for Laravel integration (auto-installed with Laravel)",
+                "symfony/http-kernel": "Required for Symfony integration (auto-installed with Symfony)"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "RyanHellyer\\ProductionStats\\Laravel\\ProductionStatsServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "RyanHellyer\\ProductionStats\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "GPL-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Ryan Hellyer",
+                    "email": "ryan@hellyer.kiwi"
+                }
+            ],
+            "description": "Production-ready performance monitoring for Laravel and Symfony - automatically track and inject performance statistics into HTML responses.",
+            "homepage": "https://ryan.hellyer.kiwi/projects/production-stats/",
+            "keywords": [
+                "laravel",
+                "load-time",
+                "monitoring",
+                "performance",
+                "production",
+                "stats",
+                "symfony"
+            ],
+            "support": {
+                "issues": "https://github.com/ryanhellyer/production-stats/issues",
+                "source": "https://github.com/ryanhellyer/production-stats/tree/master"
+            },
+            "time": "2026-07-21T13:01:12+00:00"
         },
         {
             "name": "symfony/ai-bundle",
@@ -11191,7 +11266,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "ryanhellyer/production-stats": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
