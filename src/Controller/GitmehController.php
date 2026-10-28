@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace App\Controller;
 
 use App\Service\GitmehCommitMessageGenerator;
-use App\Service\GitmehHourlyLimiter;
+use App\Service\ApiHourlyLimiter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -15,7 +15,7 @@ final class GitmehController extends AbstractController
 {
     public function __construct(
         private readonly GitmehCommitMessageGenerator $generator,
-        private readonly GitmehHourlyLimiter $limiter,
+        private readonly ApiHourlyLimiter $limiter,
     ) {
     }
 

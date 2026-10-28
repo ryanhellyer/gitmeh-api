@@ -22,6 +22,10 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    # Interface binding for the shared inference runner (autowiring does not
+    # resolve an interface to its single implementation on its own).
+    App\Service\ModelRunnerInterface: '@App\Service\ModelRunner'
+
     # Redis client for the per-IP daily rate limiter (hash + HINCRBY counters).
     Predis\Client:
         arguments:

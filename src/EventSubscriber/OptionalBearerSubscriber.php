@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
+use App\Http\ApiEndpoints;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -12,11 +13,11 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
- * Optional Bearer token validation for /v1/chat/completions.
+ * Optional Bearer token validation for the JSON API endpoints.
  *
  * Missing Authorization is allowed (same rate limits apply). If a Bearer token is
  * present it must match the hosted token, otherwise it is forwarded as a client
- * API key (gitmeh_client_api_key request attribute) so the controller can use the
+ * API key (client_api_key request attribute) so the controller can use the
  * caller's own OpenRouter key. Runs before rate limiting so a 401 doesn't burn quota.
  */
 final class OptionalBearerSubscriber implements EventSubscriberInterface
@@ -40,7 +41,7 @@ final class OptionalBearerSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($event->getRequest()->getPathInfo() !== '/v1/chat/completions') {
+        if (!ApiEndpoints::isJsonPostPath($event->getRequest()->getPathInfo())) {
             return;
         }
 
@@ -65,7 +66,7 @@ final class OptionalBearerSubscriber implements EventSubscriberInterface
 
         if (!hash_equals($this->hostedToken, $token)) {
             // Non-hosted token: store it for the controller to forward downstream.
-            $event->getRequest()->attributes->set('gitmeh_client_api_key', $token);
+            $event->getRequest()->attributes->set('client_api_key', $token);
         }
         // If it matches the hosted token, do nothing special — use the server's key.
     }

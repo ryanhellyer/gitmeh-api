@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Command;
 
-use App\Service\GitmehHourlyLimiter;
+use App\Service\ApiHourlyLimiter;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -18,7 +18,7 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 final class FlushHourlyHitsCommand extends Command
 {
     public function __construct(
-        private readonly GitmehHourlyLimiter $limiter,
+        private readonly ApiHourlyLimiter $limiter,
         #[Autowire('%kernel.logs_dir%')]
         private readonly string $logDir,
     ) {

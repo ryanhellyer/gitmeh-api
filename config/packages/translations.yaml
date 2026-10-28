@@ -1,0 +1,4 @@
+parameters:
+    # Model used only by POST /v1/translations. Set TRANSLATION_MODEL in .env
+    # (or .env.local) to change it without touching code.
+    translations.model: '%env(TRANSLATION_MODEL)%'

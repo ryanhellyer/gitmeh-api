@@ -9,13 +9,13 @@ use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
  * Per-IP hourly rate limiter backed by a Redis hash keyed by clock hour:
- *   gitmeh:hits:Y-m-d-H  ->  { ip: count, ... }
+ *   api:hits:Y-m-d-H  ->  { ip: count, ... }
  *
  * A fixed clock-hour bucket (not a sliding window): worst case a user straddling
  * two hours gets 2× the limit in one 60-minute span, which is acceptable for a
  * free hosted service.
  */
-final class GitmehHourlyLimiter
+final class ApiHourlyLimiter
 {
     private readonly string $timezone;
     private readonly int $hourlyLimit;
@@ -42,13 +42,13 @@ final class GitmehHourlyLimiter
     }
 
     /**
-     * Redis hash key for the current clock hour: gitmeh:hits:Y-m-d-H
+     * Redis hash key for the current clock hour: api:hits:Y-m-d-H
      */
     public function currentHourKey(): string
     {
         $now = new \DateTimeImmutable('now', new \DateTimeZone($this->timezone));
 
-        return 'gitmeh:hits:' . $now->format('Y-m-d-H');
+        return 'api:hits:' . $now->format('Y-m-d-H');
     }
 
     public function currentUsage(string $ip): int
@@ -113,7 +113,7 @@ final class GitmehHourlyLimiter
     public function flushCompletedHours(): int
     {
         $lastHour = (new \DateTimeImmutable('now', new \DateTimeZone($this->timezone)))->modify('-1 hour');
-        $key = 'gitmeh:hits:' . $lastHour->format('Y-m-d-H');
+        $key = 'api:hits:' . $lastHour->format('Y-m-d-H');
 
         if (!$this->redis->exists($key)) {
             return 0;

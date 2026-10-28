@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
-use App\Service\GitmehHourlyLimiter;
+use App\Http\ApiEndpoints;
+use App\Service\ApiHourlyLimiter;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,13 +18,15 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * validation and reach the controller count against the quota — matching the
  * Laravel middleware order (chat_post_only → json_body → optional_bearer → daily).
  *
- * Only POST /gitmeh and POST /v1/chat/completions consume quota.
+ * Only POST /gitmeh and the JSON API endpoints (/v1/chat/completions,
+ * /v1/translations) consume quota. All of them share one per-IP bucket, so a call
+ * to any endpoint reduces the same remaining count.
  * GET /gitmeh is the read-only status page and is never rate limited.
  */
 final class RateLimitSubscriber implements EventSubscriberInterface
 {
     public function __construct(
-        private readonly GitmehHourlyLimiter $limiter,
+        private readonly ApiHourlyLimiter $limiter,
     ) {
     }
 
@@ -44,9 +47,8 @@ final class RateLimitSubscriber implements EventSubscriberInterface
         $path = $request->getPathInfo();
         $method = $request->getMethod();
 
-        $isRateLimited =
-            ($path === '/gitmeh' && $method === 'POST')
-            || ($path === '/v1/chat/completions' && $method === 'POST');
+        $isRateLimited = ($method === 'POST' && ApiEndpoints::isJsonPostPath($path))
+            || ($path === '/gitmeh' && $method === 'POST');
 
         if (!$isRateLimited) {
             return;
@@ -58,9 +60,9 @@ final class RateLimitSubscriber implements EventSubscriberInterface
             $remaining = $this->limiter->remaining($ip);
             $retryAfter = (string) $this->limiter->retryAfterSeconds();
             $limit = $this->limiter->hourlyLimit();
-            $isChatCompletions = $path === '/v1/chat/completions';
+            $isJsonEndpoint = ApiEndpoints::isJsonPostPath($path);
 
-            if ($isChatCompletions) {
+            if ($isJsonEndpoint) {
                 // OpenAI-shaped error so OpenAI-compatible clients surface it cleanly.
                 $response = new JsonResponse([
                     'error' => [

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\EventSubscriber;
 
+use App\Http\ApiEndpoints;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -36,7 +37,7 @@ final class JsonBodySizeSubscriber implements EventSubscriberInterface
             return;
         }
 
-        if ($event->getRequest()->getPathInfo() !== '/v1/chat/completions') {
+        if (!ApiEndpoints::isJsonPostPath($event->getRequest()->getPathInfo())) {
             return;
         }
 
