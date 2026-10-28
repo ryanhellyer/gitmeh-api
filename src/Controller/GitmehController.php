@@ -32,7 +32,8 @@ final class GitmehController extends AbstractController
 
         return $this->render('gitmeh/status.html.twig', [
             'ip' => $ip,
-            ...$this->limiter->statusForIp($ip),
+            'limits' => $this->limiter->statusForAllLimits($ip),
+            'timezone' => $this->limiter->timezone(),
             'render_ms' => (int) round((microtime(true) - $start) * 1000),
         ]);
     }

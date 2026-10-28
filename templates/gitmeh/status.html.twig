@@ -29,15 +29,26 @@
                 <h2 class="text-xl font-semibold text-gray-900">gitmeh API quota (per hour)</h2>
 
                 <p class="mt-2 text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
-                    HTTP request received. For your IP ({{ ip }}), in this hour ({{ timezone }}) you have used
-                    <strong class="text-gray-700">{{ used }}</strong> of <strong class="text-gray-700">{{ limit }}</strong> requests.
-                    <strong class="text-gray-700">{{ remaining }}</strong> remain before the hourly limit.
-                    POST to this path consumes quota; this page does not.
-
-                    {% if render_ms is not null %}
-                        Response rendered in {{ render_ms }}ms via Symfony.
-                    {% endif %}
+                    HTTP request received. Quota is per endpoint and per IP ({{ ip }}), in this hour ({{ timezone }}).
+                    POST to an endpoint consumes its own quota; this page does not.
                 </p>
+
+                <ul class="mt-3 space-y-1 text-sm text-gray-500">
+                    {% for limit in limits %}
+                        <li>
+                            <strong class="text-gray-700">{{ limit.label }}</strong>:
+                            used <strong class="text-gray-700">{{ limit.used }}</strong> of
+                            <strong class="text-gray-700">{{ limit.limit }}</strong>,
+                            <strong class="text-gray-700">{{ limit.remaining }}</strong> remaining.
+                        </li>
+                    {% endfor %}
+                </ul>
+
+                {% if render_ms is not null %}
+                    <p class="mt-2 text-gray-500 dark:text-gray-400 text-sm leading-relaxed">
+                        Response rendered in {{ render_ms }}ms via Symfony.
+                    </p>
+                {% endif %}
             </div>
         </div>
     </div>

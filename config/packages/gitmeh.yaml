@@ -7,7 +7,12 @@ parameters:
     gitmeh.prompt: '%env(GITMEH_PROMPT)%'
     gitmeh.chat_inference_timeout_seconds: '%env(int:GITMEH_CHAT_INFERENCE_TIMEOUT)%'
     gitmeh.timeout: '%env(int:GITMEH_CHAT_TIMEOUT)%'
-    gitmeh.hourly_limit: '%env(int:API_HOURLY_LIMIT)%'
+    # Per-endpoint hourly ceilings. Each key is a Limit enum bucket name; one
+    # endpoint exhausting its quota never limits another.
+    gitmeh.hourly_limits:
+        gitmeh: '%env(int:GITMEH_HOURLY_LIMIT)%'
+        translations: '%env(int:TRANSLATIONS_HOURLY_LIMIT)%'
+        chat_completions: '%env(int:CHAT_COMPLETIONS_HOURLY_LIMIT)%'
     gitmeh.timezone: '%env(API_RATE_LIMIT_TIMEZONE)%'
     gitmeh.hosted_bearer_token: '%env(GITMEH_HOSTED_TOKEN)%'
     gitmeh.max_json_request_bytes: '%env(int:GITMEH_MAX_JSON_BYTES)%'
