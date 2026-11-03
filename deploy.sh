@@ -60,7 +60,7 @@ rsync -avz --delete "${EXCLUDES[@]}" \
 
 echo ""
 echo "Running post-deploy commands..."
-if ! ssh "${PROD_HOST}" "${REMOTE_PATH} && cd ${PROD_PATH} && composer install --no-dev --optimize-autoloader && php -r 'opcache_reset();' && php bin/console doctrine:migrations:migrate --no-interaction && php bin/console cache:clear --no-warmup && php bin/console cache:warmup && php bin/console assets:install public && php bin/console importmap:install"; then
+if ! ssh "${PROD_HOST}" "${REMOTE_PATH} && cd ${PROD_PATH} && composer install --no-dev --optimize-autoloader && php -r 'opcache_reset();' && php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration && php bin/console cache:clear --no-warmup && php bin/console cache:warmup && php bin/console assets:install public && php bin/console importmap:install"; then
     echo "" >&2
     echo "x Post-deploy commands FAILED on ${PROD_HOST}." >&2
     echo "  Re-run the failing step by hand to see the full error:" >&2
