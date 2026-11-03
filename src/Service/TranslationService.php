@@ -67,7 +67,9 @@ final class TranslationService
     {
         $lines = [
             "You are a translation engine. Translate the user's text from {$from} to {$to}.",
-            'Preserve meaning, names, numbers, formatting and line breaks.',
+            'Preserve meaning, names, numbers and formatting.',
+            'Keep the exact layout of the source: the same number of lines in the same order, with every line break, blank line, indentation and spacing kept as-is.',
+            'Line breaks are part of the text, not errors. Never join lines, split lines, re-wrap, re-indent or tidy up the layout, even when the source is poorly formatted.',
         ];
 
         if ($tone !== self::TONE_NONE) {

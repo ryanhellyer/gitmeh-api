@@ -43,6 +43,25 @@ final class TranslationServiceTest extends TestCase
         self::assertStringNotContainsString('kitten', $prompt);
     }
 
+    public function testPromptRequiresTheSourceLineStructureToBeKeptExactly(): void
+    {
+        $prompt = TranslationService::prompt('English', 'German', TranslationService::TONE_NONE);
+
+        self::assertStringContainsString('same number of lines in the same order', $prompt);
+        self::assertStringContainsString('Never join lines, split lines, re-wrap, re-indent or tidy up the layout', $prompt);
+        self::assertStringContainsString('even when the source is poorly formatted', $prompt);
+    }
+
+    public function testPromptStillPreservesFormattingWhenAToneIsChosen(): void
+    {
+        foreach (TranslationService::TONES as $tone) {
+            $prompt = TranslationService::prompt('English', 'German', $tone);
+
+            self::assertStringContainsString('Keep the exact layout of the source', $prompt, $tone);
+            self::assertStringContainsString('Never join lines', $prompt, $tone);
+        }
+    }
+
     public function testTonePromptIncludesOnlyTheChosenInstruction(): void
     {
         $prompt = TranslationService::prompt('English', 'German', 'formal');
@@ -78,6 +97,20 @@ final class TranslationServiceTest extends TestCase
         self::assertSame(4096, $runner->calls[0]['options']['max_output_tokens']);
         self::assertStringContainsString('kitten', $runner->calls[0]['system']);
         self::assertStringContainsString("Hello\nthere", $runner->calls[0]['user']);
+    }
+
+    public function testTranslationKeepsPoorlyFormattedThreeLineInputIntact(): void
+    {
+        $source = "Hello there\nyes please\nok";
+        $runner = new RecordingModelRunner("Bonjour toi\noui s'il te plait\nd'accord");
+
+        $result = (new TranslationService($runner, 'vendor/translation-model'))
+            ->translate('English', 'French', $source);
+
+        self::assertTrue($result['ok']);
+        self::assertSame("Bonjour toi\noui s'il te plait\nd'accord", $result['translation']);
+        self::assertSame(3, substr_count($result['translation'], "\n") + 1);
+        self::assertStringContainsString("Hello there\nyes please\nok", $runner->calls[0]['user']);
     }
 
     public function testTranslateWithNoToneSendsNoToneInstruction(): void
