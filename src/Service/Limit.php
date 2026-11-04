@@ -32,13 +32,17 @@ enum Limit: string
      * The bucket a request path consumes, or null when the path is not limited.
      *
      * POST /gitmeh is the legacy commit-message endpoint; the /v1 paths are the
-     * JSON API. GET /gitmeh (the status page) is deliberately absent — reading
-     * status must never cost quota.
+     * JSON API. The two review modes share the translations bucket (and its
+     * model), so one visitor cannot multiply their quota by switching modes.
+     * GET /gitmeh (the status page) is deliberately absent — reading status
+     * must never cost quota.
      */
     public static function forPostPath(string $path): ?self
     {
         return match ($path) {
-            ApiEndpoints::TRANSLATIONS => self::TRANSLATIONS,
+            ApiEndpoints::TRANSLATIONS,
+            ApiEndpoints::ANALYSES,
+            ApiEndpoints::REWRITES => self::TRANSLATIONS,
             ApiEndpoints::CHAT_COMPLETIONS => self::CHAT_COMPLETIONS,
             '/gitmeh' => self::GITMEH,
             default => null,
