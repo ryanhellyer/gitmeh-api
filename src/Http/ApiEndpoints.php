@@ -13,15 +13,24 @@ namespace App\Http;
  */
 final class ApiEndpoints
 {
+    public const GIT_MEH_COMPLETIONS = '/v1/git_meh/completions';
+
+    /**
+     * Legacy OpenAI-shaped URL. It only issues a 308 redirect to
+     * GIT_MEH_COMPLETIONS and is kept for gitmeh releases that still call it.
+     */
     public const CHAT_COMPLETIONS = '/v1/chat/completions';
     public const TRANSLATIONS = '/v1/translations';
     public const ANALYSES = '/v1/analyses';
     public const REWRITES = '/v1/rewrites';
 
     /**
-     * Paths that only accept POST, speak JSON, and consume the shared hourly quota.
+     * Paths that only accept POST and speak JSON. The request subscribers
+     * (POST-only guard, body-size cap, bearer check) key off this list; the
+     * redirect path is included so it gets the same guards before answering.
      */
     public const JSON_POST_PATHS = [
+        self::GIT_MEH_COMPLETIONS,
         self::CHAT_COMPLETIONS,
         self::TRANSLATIONS,
         self::ANALYSES,

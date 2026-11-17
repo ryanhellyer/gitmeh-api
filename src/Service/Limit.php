@@ -35,7 +35,9 @@ enum Limit: string
      * JSON API. The two review modes share the translations bucket (and its
      * model), so one visitor cannot multiply their quota by switching modes.
      * GET /gitmeh (the status page) is deliberately absent — reading status
-     * must never cost quota.
+     * must never cost quota. The old /v1/chat/completions URL only redirects,
+     * so it does not consume quota either; the redirected request to
+     * /v1/git_meh/completions does.
      */
     public static function forPostPath(string $path): ?self
     {
@@ -43,7 +45,7 @@ enum Limit: string
             ApiEndpoints::TRANSLATIONS,
             ApiEndpoints::ANALYSES,
             ApiEndpoints::REWRITES => self::TRANSLATIONS,
-            ApiEndpoints::CHAT_COMPLETIONS => self::CHAT_COMPLETIONS,
+            ApiEndpoints::GIT_MEH_COMPLETIONS => self::CHAT_COMPLETIONS,
             '/gitmeh' => self::GITMEH,
             default => null,
         };
@@ -57,7 +59,7 @@ enum Limit: string
         return match ($this) {
             self::GITMEH => 'gitmeh',
             self::TRANSLATIONS => 'translations',
-            self::CHAT_COMPLETIONS => 'chat completions',
+            self::CHAT_COMPLETIONS => 'git_meh completions',
         };
     }
 

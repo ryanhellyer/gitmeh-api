@@ -155,7 +155,7 @@ check_quota() {
     [ "$LAST_STATUS" = 429 ] || return 0
 
     printf '\n  %sHourly quota exhausted for this IP.%s\n' "$RED" "$RESET"
-    printf '  The limit is shared by /gitmeh, /v1/chat/completions and /v1/translations,\n'
+    printf '  The limit is shared by /gitmeh, /v1/git_meh/completions and /v1/translations,\n'
     printf '  and the 4xx checks below consume it too (the limiter runs first).\n'
     printf '  Wait for the next clock hour, or clear the bucket server-side:\n'
     printf '    redis-cli HDEL "api:hits:%s" 127.0.0.1\n' "$(date -u +%Y-%m-%d-%H)"

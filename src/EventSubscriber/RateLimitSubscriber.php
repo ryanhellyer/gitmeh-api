@@ -18,11 +18,12 @@ use Symfony\Component\HttpKernel\KernelEvents;
  * validation and reach the controller count against the quota — matching the
  * Laravel middleware order (chat_post_only → json_body → optional_bearer → daily).
  *
- * Only POST /gitmeh and the JSON API endpoints (/v1/chat/completions,
+ * Only POST /gitmeh and the JSON API endpoints (/v1/git_meh/completions,
  * /v1/translations, /v1/analyses, /v1/rewrites) consume quota. Each family has
  * its own per-IP bucket and ceiling (see Limit), so exhausting one never limits
  * the others; the review modes share the translations bucket.
- * GET /gitmeh is the read-only status page and is never rate limited.
+ * GET /gitmeh is the read-only status page and is never rate limited, and the
+ * legacy /v1/chat/completions redirect does not consume quota.
  */
 final class RateLimitSubscriber implements EventSubscriberInterface
 {
