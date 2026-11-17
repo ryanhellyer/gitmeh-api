@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Tests\Controller;
 
 use App\Controller\GitMehCompletionsController;
+use App\Http\ApiEndpoints;
 use App\Service\GitMehCompletionService;
 use App\Tests\Double\RecordingModelRunner;
 use PHPUnit\Framework\TestCase;
@@ -149,6 +150,16 @@ final class GitMehCompletionsControllerTest extends TestCase
 
         self::assertSame(308, $response->getStatusCode());
         self::assertSame('/v1/git_meh/completions', $response->headers->get('Location'));
+    }
+
+    /**
+     * The redirect must answer GET as well as POST, so it cannot be covered by
+     * the POST-only JSON guard (which would answer 405 before routing).
+     */
+    public function testLegacyUrlIsNotSubjectToThePostOnlyJsonGuard(): void
+    {
+        self::assertFalse(ApiEndpoints::isJsonPostPath(ApiEndpoints::CHAT_COMPLETIONS));
+        self::assertTrue(ApiEndpoints::isJsonPostPath(ApiEndpoints::GIT_MEH_COMPLETIONS));
     }
 
     /**

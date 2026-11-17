@@ -131,9 +131,10 @@ final class GitMehCompletionsController extends AbstractController
 
     /**
      * The old URL is kept as a permanent redirect so gitmeh releases that still
-     * call /v1/chat/completions reach the single real endpoint.
+     * call /v1/chat/completions reach the single real endpoint. GET is included
+     * so visiting the URL in a browser shows the redirect instead of a 405.
      */
-    #[Route('/v1/chat/completions', name: 'chat_completions_redirect', methods: ['POST'])]
+    #[Route('/v1/chat/completions', name: 'chat_completions_redirect', methods: ['GET', 'POST'])]
     public function redirectFromLegacyUrl(): RedirectResponse
     {
         // 308 keeps the POST method and body when the client follows.

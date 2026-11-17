@@ -26,12 +26,12 @@ final class ApiEndpoints
 
     /**
      * Paths that only accept POST and speak JSON. The request subscribers
-     * (POST-only guard, body-size cap, bearer check) key off this list; the
-     * redirect path is included so it gets the same guards before answering.
+     * (POST-only guard, body-size cap, bearer check) key off this list. The
+     * legacy /v1/chat/completions URL is deliberately absent: it is a plain
+     * redirect that must answer GET too, so browsers and older clients see it.
      */
     public const JSON_POST_PATHS = [
         self::GIT_MEH_COMPLETIONS,
-        self::CHAT_COMPLETIONS,
         self::TRANSLATIONS,
         self::ANALYSES,
         self::REWRITES,
